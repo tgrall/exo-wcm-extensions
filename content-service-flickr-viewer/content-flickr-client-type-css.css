@@ -1,0 +1,82 @@
+<%
+    def node = uicomponent.getNode();
+    def flickrId = ""
+    
+    if (node.hasProperty("exo:userID")) {
+    flickrId = node.getProperty("exo:userID").getString();
+    }
+%>
+
+<style>
+  <% _ctx.include(uicomponent.getTemplateSkin("exo:flickrViewerType", "Stylesheet")); %>
+</style>
+
+
+<div id="flickrGallery" class="gallery">
+  
+</div>
+
+<script>
+
+   <%="\$"%> .getJSON("http://api.flickr.com/services/feeds/photos_public.gne?id=<%=flickrId%>&format=json&jsoncallback=?", displayImages);        
+
+  function displayImages(data) {          
+    // Randomly choose where to start. A random number between 0 and the number of photos we grabbed (20) minus 9 (we are displaying 9 photos).
+    var iStart = Math.floor(Math.random()*(12));      
+    // Reset our counter to 0
+    var iCount = 0;                
+    // Start putting together the HTML string
+    var htmlString = "<ul>";          
+    // Now start cycling through our array of Flickr photo details
+    <%="\$"%>.each(data.items, function(i,item){
+      // Let's only display 9 photos (a 3x3 grid), starting from a random point in the feed          
+      if (iCount > iStart && iCount <= (iStart + 12)) {
+    
+        // I only want the ickle square thumbnails
+        var sourceSquare = (item.media.m).replace("_m.jpg", "_s.jpg");
+        var largeImage = (item.media.m).replace("_m.jpg", ".jpg");  
+        // Here's where we piece together the HTML
+        htmlString += '<li class="image" ><a ';
+        htmlString += ' id="single_image" rel="lightbox-mygallery" title="+ item.title +" ';
+        htmlString += ' href="' + largeImage + '" >';
+        htmlString += '<img src="' + sourceSquare + '" alt="' + item.title + '" title="' + item.title + '"/>';
+        htmlString += '</a></li>';
+      }
+
+#flickrGallery ul {
+  list-style:      none;
+  float:         left;
+  padding:       0px;
+  margin:       0px;
+}
+#flickrGallery ul li {
+  display:       inline;
+}
+#flickrGallery ul li img {
+  border:       none;
+  padding:       0 2px 2px 0;
+  width:         50px;
+  height:       50px;
+  opacity:       1;
+  -moz-opacity:     1;  
+}
+#flickrGallery ul li img:hover {
+  opacity:       0.7;
+  -moz-opacity:     0.7;
+}
+      // Increase our counter by 1
+      iCount++;
+    });    
+    
+  // Pop our HTML in the #flickrGallery DIV  
+  <%="\$"%>('#flickrGallery').html("<ul class='images'>"+  htmlString + "</ul>");
+  
+  <%="\$"%>('a[rel="lightbox-mygallery"]').lightbox();
+    
+}
+          
+         
+          
+</script>
+
+
